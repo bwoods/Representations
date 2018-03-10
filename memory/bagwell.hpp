@@ -29,13 +29,15 @@ public:
 		}
 	}
 
-	template <typename... Args>
-	void emplace_back(Args&&... args) {
+	template <typename... Args> inline
+	void __attribute__((always_inline)) emplace_back(Args&&... args) {
 		if (__builtin_expect(next == last, false)) {
-			size_t next_size = Initial << indirection.size();
-			indirection.emplace_back(allocator().allocate(next_size));
-			next = indirection.back();
-			last = next + next_size;
+			[&] () __attribute__((noinline)) {
+				size_t next_size = Initial << indirection.size();
+				indirection.emplace_back(allocator().allocate(next_size));
+				next = indirection.back();
+				last = next + next_size;
+			}();
 		}
 
 		allocator().construct(next, std::forward<Args>(args)...);
@@ -55,7 +57,7 @@ public:
 		return count;
 	}
 
-	decltype(auto) operator[](size_t index) const noexcept {
+	inline T const& __attribute__((always_inline)) operator[](size_t index) const noexcept {
 //		const unsigned long fixed = index+Initial;
 //		int fixed_zeroes = __builtin_clzl(fixed);
 //		const unsigned long msb_diff = (sizeof(unsigned long)*8-Base()-1) - fixed_zeroes;

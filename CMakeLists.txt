@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.9)
 project(rep CXX C)
+include(CTest)
 
 set(CMAKE_CXX_STANDARD 17) # for all targets
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

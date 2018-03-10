@@ -1,5 +1,5 @@
 #define NDEBUG 1
-#define NONIUS_USE_BOOST_CHRONO 1
+//#define NONIUS_USE_BOOST_CHRONO 1
 #include "nonius/nonius.h++"
 
 #include "memory/stl.hpp"
@@ -98,7 +98,7 @@ auto benchmark(std::string title, size_t count) {
 
 #include <fstream>
 
-std::string html = R"(
+static std::string html_template = R"(
 <html>
 <head>
 </head>
@@ -117,21 +117,19 @@ void report(std::vector<std::string> const& files) {
 	map["figures"] = cpptempl::make_data(figures);
 
 	std::ofstream stream("benchmarks.html", std::ios::binary);
-	cpptempl::parse(stream, html, map);
+	cpptempl::parse(stream, html_template, map);
 	stream << std::flush;
 }
 
 
 int main()
 {
-	size_t counts[] = { 10000000, 1000000, 100000, 10000, 1000, 100, 10 };
+	size_t counts[] = { 50000000, 10000000, 1000000, 100000, 10000, 1000, 100, 10 };
 
 	std::vector<std::string> files;
-	for (auto count : counts) {
-		files.emplace_back(benchmark<construction>("Construction", count));
-//		files.emplace_back(benchmark<random_reads>("Random Indexing", count));
-//		files.emplace_back(benchmark<linear_reads>("Linear Indexing", count));
-	}
+	for (auto count : counts) files.emplace_back(benchmark<construction>("Construction", count));
+	for (auto count : counts) files.emplace_back(benchmark<random_reads>("Random Indexing", count));
+	for (auto count : counts) files.emplace_back(benchmark<linear_reads>("Linear Indexing", count));
 
 	report(files);
 

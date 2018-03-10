@@ -35,10 +35,10 @@ public:
 		++count;
 	}
 
-	decltype(auto) operator[](size_t index) const { return shared_ptr.get()[index]; }
+	T const& operator[](size_t index) const { return shared_ptr.get()[index]; }
 	auto begin() const { return shared_ptr.get(); }
 	auto end() const { return shared_ptr.get() + count; }
-	decltype(auto) back() const { return end()[-1]; }
+	T const& back() const { return end()[-1]; }
 };
 
 
