@@ -2,6 +2,7 @@
 //#define NONIUS_USE_BOOST_CHRONO 1
 #include "nonius/nonius.h++"
 
+#include "memory/allocator.hpp"
 #include "memory/iterators.hpp"
 #include "memory/shared.hpp"
 #include "memory/bagwell.hpp"
@@ -13,9 +14,9 @@
 
 template <template <typename...> class Container>
 auto __attribute__((noinline)) zero_to(size_t n) { // `noinline` stops the optimizer from computing the sum at compile-time
-	std::vector<int> vec(n);
+	std::vector<int, memory::without_value_initialization<int>> vec(n);
 	std::iota(std::begin(vec), std::end(vec), 0);
-	return Container<int>{vec.data(), vec.data() + n};
+	return Container<int, memory::without_value_initialization<int>>{vec.data(), vec.data() + n};
 }
 
 template <template <typename...> class Container>
