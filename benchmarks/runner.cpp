@@ -45,6 +45,21 @@ struct iteration {
 };
 
 template <template <typename...> class Container>
+struct spans {
+	auto __attribute__((noinline)) operator() (size_t count, nonius::chronometer& meter) {
+		uint64_t sum = 0;
+		auto values = zero_to<Container>(count);
+
+		meter.measure([&] {
+			memory::spans(values, [&] (auto n) {
+				sum += n;
+			});
+		});
+		return sum;
+	}
+};
+
+template <template <typename...> class Container>
 struct linear_indexing {
 	auto __attribute__((noinline)) operator() (size_t count, nonius::chronometer& meter) {
 		uint64_t sum = 0;
@@ -80,7 +95,7 @@ static unsigned iframe = 0;
 template <template <template <typename...> class Container> class Measure>
 auto benchmark(std::string title, size_t count) {
 	nonius::configuration cfg;
-	cfg.samples = 50;
+	cfg.samples = 20;
 
 	cfg.output_file = "fig-" + std::to_string(++iframe) + ".html";
 	cfg.title = title + " — " + std::to_string(count);
@@ -138,13 +153,14 @@ void report(std::vector<std::string> const& files) {
 
 int main()
 {
-	size_t counts[] = { 50000000, 10000000, 1000000, 100000, 10000, 1000, 100, 10 };
+	size_t counts[] = { 100000000, 1000000, 10000, 1000, 100, 10 };
 
 	std::vector<std::string> files;
 	for (auto count : counts) files.emplace_back(benchmark<construction>("Construction", count));
 	for (auto count : counts) files.emplace_back(benchmark<random_indexing>("Random Indexing", count));
 	for (auto count : counts) files.emplace_back(benchmark<linear_indexing>("Linear Indexing", count));
 	for (auto count : counts) files.emplace_back(benchmark<iteration>("Iterators", count));
+	for (auto count : counts) files.emplace_back(benchmark<spans>("Spans", count));
 
 	report(files);
 

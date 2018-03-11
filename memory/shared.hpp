@@ -31,8 +31,7 @@ public:
 			capacity = resize;
 		}
 
-		allocator().construct(shared_ptr.get() + count, std::forward<Args>(args)...);
-		++count;
+		allocator().construct(shared_ptr.get() + count++, std::forward<Args>(args)...);
 	}
 
 	T const& operator[](size_t index) const { return shared_ptr.get()[index]; }

@@ -32,12 +32,12 @@ public:
 	template <typename... Args> inline
 	void __attribute__((always_inline)) emplace_back(Args&&... args) {
 		if (__builtin_expect(next == last, false)) {
-			[&] () __attribute__((noinline)) {
+//			[&] () __attribute__((noinline)) {
 				size_t next_size = Initial << indirection.size();
 				indirection.emplace_back(allocator().allocate(next_size));
 				next = indirection.back();
 				last = next + next_size;
-			}();
+//			}();
 		}
 
 		allocator().construct(next++, std::forward<Args>(args)...);
@@ -61,10 +61,6 @@ public:
 			count += Initial * ((1 << full) - 1);
 
 		return count;
-	}
-
-	bool empty() const noexcept {
-		return indirection.empty();
 	}
 
 public:

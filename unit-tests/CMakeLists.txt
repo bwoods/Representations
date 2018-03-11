@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.9)
 
-include(CheckCXXCompilerFlag)
+include(CheckCXXCompilerFlag) # TODO: https://cmake.org/cmake/help/latest/manual/cmake-buildsystem.7.html#interface-libraries
 CHECK_CXX_COMPILER_FLAG("-fsanitize=address,undefined" COMPILER_SUPPORTS_SANITIZERS)
 if(COMPILER_SUPPORTS_SANITIZERS)
 		set(CMAKE_CXX_FLAGS "-fno-omit-frame-pointer -fsanitize=address,undefined ${CMAKE_CXX_FLAGS}")
