@@ -13,11 +13,10 @@ Note that each implementation only implements a subset of [std::vector][]’s in
 Running the tests is as simple as
 
 ```sh
-mkdir build
 cmake -Bbuild -H.
+cmake --build build --target vector_tests
 cmake --build build --target benchmarks
-cd build
-ctest --output-on-failure
+cd build && ctest --output-on-failure
 ```
 
 If the unit tests all pass, the report will be in [build/benchmarks.html](build/benchmarks.html).

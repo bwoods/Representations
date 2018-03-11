@@ -10,7 +10,7 @@ endif()
 
 
 add_executable(benchmarks runner.cpp
-	../memory/shared.hpp ../memory/bagwell.hpp ../memory/stl.hpp)
+	../memory/shared.hpp ../memory/bagwell.hpp ../memory/iterators.hpp)
 target_include_directories(benchmarks PRIVATE .. nonius/include)
 enable_testing()
 add_test(NAME benchmarks COMMAND benchmarks WORKING_DIRECTORY ${CMAKE_BINARY_DIR})

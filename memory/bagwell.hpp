@@ -3,6 +3,7 @@
 #include "memory/shared.hpp"
 
 #include <type_traits>
+#include <string>
 
 
 namespace memory {
@@ -40,9 +41,16 @@ public:
 			}();
 		}
 
-		allocator().construct(next, std::forward<Args>(args)...);
-//		*next++ = T{args...};
-		++next;
+		allocator().construct(next++, std::forward<Args>(args)...);
+	}
+
+	inline T const& __attribute__((always_inline)) operator[](size_t index) const noexcept {
+		const size_t fixed = index+Initial;
+		auto fixed_zeroes = __builtin_clzll(fixed);
+		const size_t msb_diff = (sizeof(size_t) * 8 - Base() - 1) - fixed_zeroes;
+		const size_t msbit = 1 << ((sizeof(size_t) * 8 - 1) - fixed_zeroes);
+		const size_t fixed₂ = fixed & ~msbit;
+		return indirection[msb_diff][fixed₂];
 	}
 
 	size_t size() const noexcept {
@@ -57,61 +65,21 @@ public:
 		return count;
 	}
 
-	inline T const& __attribute__((always_inline)) operator[](size_t index) const noexcept {
-//		const unsigned long fixed = index+Initial;
-//		int fixed_zeroes = __builtin_clzl(fixed);
-//		const unsigned long msb_diff = (sizeof(unsigned long)*8-Base()-1) - fixed_zeroes;
-//		const unsigned long msbit = 1 << ((sizeof(unsigned long)*8-1) - fixed_zeroes);
-//		const unsigned long fixed₂ = fixed & ~msbit;
-//
-		const size_t fixed = index+Initial;
-		auto fixed_zeroes = __builtin_clzll(fixed);
-		const size_t msb_diff = (sizeof(size_t) * 8 - Base() - 1) - fixed_zeroes;
-		const size_t msbit = 1 << ((sizeof(size_t) * 8 - 1) - fixed_zeroes);
-		const size_t fixed₂ = fixed & ~msbit;
-		return indirection[msb_diff][fixed₂];
+	bool empty() const noexcept {
+		return indirection.empty();
 	}
 
-	template <class Function>
-	friend void spans(bagwell const& container, Function&& function) {
-		if (__builtin_expect(container.indirection.size() == 0, false))
-			return;
+public:
+	auto begin(size_t n) const { return indirection[n]; }
+	auto end(size_t n) const { return begin(n) + bucket_size(n); }
+	auto bucket_count() const { return indirection.size(); }
+	size_t bucket_size(size_t n) const {
+		if (n < indirection.size() - 1)
+			return Initial << n;
 
-		for (size_t i = 0; i < container.indirection.size() - 1; ++i)
-			function(container.indirection[i], container.indirection[i] + (Initial << i));
-
-		function(container.indirection.back(), container.next);
+		return std::distance(indirection.back(), next);
 	}
 
-	friend auto dot(bagwell const& container) {
-		std::string graphviz;
-		graphviz += "digraph G {\n";
-		graphviz += "\tnode [shape=record, width=.1,height=.1];\n";
-		graphviz += "\tedge [headport=w, tailport=e, arrowsize=0.5];\n";
-		graphviz += "\trankdir=LR;\n";
-		graphviz += "\tranksep=1;\n\n";
-
-		graphviz += "\tindirection [label = \"";
-		for (size_t i = 0; i < container.indirection.size(); ++i)
-			graphviz += "<f" + std::to_string(i) + "> |";
-		graphviz.pop_back();
-		graphviz += " \"];\n";
-
-		spans(container, [&, i = 0] (auto begin, auto end) mutable {
-			graphviz += "\tspan" + std::to_string(i) + " [label = \"{<n>";
-			std::for_each(begin, end, [&] (auto n) {
-				graphviz += " " + std::to_string(n) + " |";
-			});
-			graphviz.pop_back();
-			graphviz += "}\"];\n";
-
-			graphviz += "\tindirection:f" + std::to_string(i) + " -> span" + std::to_string(i) + ":n;\n\n";
-			++i;
-		});
-
-		graphviz += "}\n";
-		return graphviz;
-	}
 
 };
 
