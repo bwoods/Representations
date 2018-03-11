@@ -6,8 +6,6 @@ Note that each implementation only implements a subset of [std::vector][]’s in
 
 [std::vector]: http://en.cppreference.com/w/cpp/container/vector
 
-
-
 ## Benchmarking
 
 Running the tests is as simple as
@@ -20,4 +18,6 @@ cd build && ctest --output-on-failure
 ```
 
 If the unit tests all pass, the report will be in [build/benchmarks.html](build/benchmarks.html).
+
+
 

@@ -14,8 +14,8 @@
 template <template <typename...> class Container>
 auto __attribute__((noinline)) zero_to(size_t n) { // `noinline` stops the optimizer from computing the sum at compile-time
 	std::vector<int> vec(n);
-	std::iota(vec.begin(), vec.end(), 0);
-	return Container<int>{vec.begin(), vec.end()};
+	std::iota(std::begin(vec), std::end(vec), 0);
+	return Container<int>{vec.data(), vec.data() + n};
 }
 
 template <template <typename...> class Container>
@@ -25,13 +25,26 @@ struct construction {
 		std::vector<nonius::storage_for<decltype(zero_to<Container>(count))>> storage(meter.runs());
 
 		meter.measure([&] (size_t i) {
-			storage[i].construct(values.begin(), values.end());
+			storage[i].construct(values.data(), values.data() + values.size());
 		});
 	}
 };
 
 template <template <typename...> class Container>
-struct linear_reads {
+struct iteration {
+	auto __attribute__((noinline)) operator() (size_t count, nonius::chronometer& meter) {
+		uint64_t sum = 0;
+		auto values = zero_to<Container>(count);
+
+		meter.measure([&] {
+			sum = std::accumulate(std::begin(values), std::end(values), size_t{});
+		});
+		return sum;
+	}
+};
+
+template <template <typename...> class Container>
+struct linear_indexing {
 	auto __attribute__((noinline)) operator() (size_t count, nonius::chronometer& meter) {
 		uint64_t sum = 0;
 		auto values = zero_to<Container>(count);
@@ -46,12 +59,12 @@ struct linear_reads {
 };
 
 template <template <typename...> class Container>
-struct random_reads {
+struct random_indexing {
 	auto __attribute__((noinline)) operator() (size_t count, nonius::chronometer& meter) {
 		uint64_t sum = 0;
 		auto values = zero_to<Container>(count);
 		auto indexes = zero_to<std::vector>(values.size());
-		random_shuffle(indexes.begin(), indexes.end());
+		random_shuffle(std::begin(indexes), std::begin(indexes));
 
 		meter.measure([&] {
 			sum = 0;
@@ -128,10 +141,12 @@ int main()
 
 	std::vector<std::string> files;
 	for (auto count : counts) files.emplace_back(benchmark<construction>("Construction", count));
-	for (auto count : counts) files.emplace_back(benchmark<random_reads>("Random Indexing", count));
-	for (auto count : counts) files.emplace_back(benchmark<linear_reads>("Linear Indexing", count));
+	for (auto count : counts) files.emplace_back(benchmark<random_indexing>("Random Indexing", count));
+	for (auto count : counts) files.emplace_back(benchmark<linear_indexing>("Linear Indexing", count));
+	for (auto count : counts) files.emplace_back(benchmark<iteration>("Iterators", count));
 
 	report(files);
 
 }
+
 

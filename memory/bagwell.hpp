@@ -8,7 +8,6 @@
 
 namespace memory {
 
-
 template <typename T, typename Allocator = std::allocator<T>, typename Base = std::integral_constant<size_t, 4>>
 class bagwell : Allocator {
 	static constexpr size_t Initial = 1 << Base();
@@ -58,9 +57,8 @@ public:
 			return 0;
 
 		auto count = std::distance(indirection.back(), next);
-		if (auto full = indirection.size() - 1; full != 0) {
+		if (auto full = indirection.size() - 1; full != 0)
 			count += Initial * ((1 << full) - 1);
-		}
 
 		return count;
 	}
@@ -80,9 +78,7 @@ public:
 		return std::distance(indirection.back(), next);
 	}
 
-
 };
-
 
 
 } // end namespace

@@ -24,7 +24,7 @@ struct bucket_iterator : std::iterator<std::forward_iterator_tag, std::decay_t<d
 
 	auto operator++(int) { auto previous = *this; ++(*this); return previous; }
 	auto& operator++() {
-		if (++begin == end and ++bucket != container.bucket_count()) {
+		if (__builtin_expect(++begin == end, false) and __builtin_expect(++bucket != container.bucket_count(), true)) {
 			begin = container.begin(bucket);
 			end = container.end(bucket);
 		}
@@ -35,6 +35,7 @@ struct bucket_iterator : std::iterator<std::forward_iterator_tag, std::decay_t<d
 
 
 }
+
 
 
 namespace std {
