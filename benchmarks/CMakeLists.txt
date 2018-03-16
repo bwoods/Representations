@@ -9,7 +9,7 @@ if(COMPILER_SUPPORTS_MARCH_NATIVE)
 endif()
 
 
-add_executable(benchmarks runner.cpp
+add_executable(benchmarks benchmark.hpp benchmark.cpp #runner.cpp
 	../memory/shared.hpp ../memory/bagwell.hpp ../memory/iterators.hpp ../memory/allocator.hpp)
 target_include_directories(benchmarks PRIVATE .. nonius/include)
 enable_testing()

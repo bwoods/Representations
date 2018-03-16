@@ -24,7 +24,7 @@ public:
 	template <typename... Args>
 	void emplace_back(Args&&... args) {
 		if (__builtin_expect(count == capacity, false)) {
-			auto resize = std::max<size_t>(16, capacity * 2.718281828459045);
+			auto resize = std::max<size_t>(16, capacity * 2);
 			auto replacement = std::shared_ptr<T>(allocator().allocate(resize), deleter(), allocator());
 			std::copy_n(std::make_move_iterator(shared_ptr.get()), count, replacement.get());
 			shared_ptr = std::move(replacement);
