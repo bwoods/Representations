@@ -13,7 +13,17 @@ template <typename T>
 auto label() {
 
 #ifdef _MSC_VER
-	#error Not written yet
+	std::string string = __FUNCSIG__;
+	auto begin = ++std::find(string.begin(), string.end(), '<');
+	auto space = std::find(begin, string.end(), ' ');
+	if (space != string.end())
+		begin = ++space;
+
+	auto end = std::find(begin, string.end(), '<');
+	if (end == string.end())
+		end = std::find(begin, string.end(), '>');
+
+	return std::string(begin, end);
 #else
 	std::string string = __PRETTY_FUNCTION__;
 	std::string prefix = "T = ";
